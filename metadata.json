@@ -1,0 +1,7 @@
+{
+  "name": "EKG Assistant – Theory + Practice",
+  "description": "A clinical education & decision-support tool for ECG analysis, featuring smart camera capture, image enhancement, and rule-based diagnostic logic.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
