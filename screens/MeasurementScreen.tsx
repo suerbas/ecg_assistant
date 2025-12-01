@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../App';
-import { ArrowLeft, MoveHorizontal, Check, Settings2, ArrowDownToLine, Ruler } from 'lucide-react';
+import { ArrowLeft, MoveHorizontal, Check, Settings2, ArrowDownToLine, Ruler, Info } from 'lucide-react';
 
 const MeasurementScreen = () => {
   const { navigate, capturedImage, measurements, updateMeasurements } = useApp();
@@ -10,7 +10,6 @@ const MeasurementScreen = () => {
   const [caliper2, setCaliper2] = useState(70); // percent
   
   // Scale state: How many milliseconds is the full width of the view?
-  // Defaulting to 2500ms (2.5 seconds), which is typical for a phone view of a rhythm strip.
   const [totalViewMs, setTotalViewMs] = useState(2500);
   const [showCalibration, setShowCalibration] = useState(false);
 
@@ -18,9 +17,6 @@ const MeasurementScreen = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleDrag = (e: React.MouseEvent | React.TouchEvent, setter: (val: number) => void) => {
-    // Prevent scrolling on touch devices while dragging
-    // e.preventDefault(); // Note: React synthetic events might not support this directly in all cases, handled via styling 'touch-action: none'
-    
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
@@ -38,7 +34,6 @@ const MeasurementScreen = () => {
   
   const measuredMs = Math.round((diffPercent / 100) * totalViewMs);
   const smallBoxes = (measuredMs / 40).toFixed(1);
-  const largeBoxes = (measuredMs / 200).toFixed(1);
 
   const isValid = measurements.rrIntervalMs && measurements.qtIntervalMs && measurements.qrsWidthMs;
 
@@ -52,7 +47,15 @@ const MeasurementScreen = () => {
         <button onClick={() => navigate('ECGCapture')} className="p-2 -ml-2 rounded-full hover:bg-gray-100">
             <ArrowLeft className="w-6 h-6 text-gray-700" />
         </button>
-        <h2 className="text-xl font-bold text-gray-800">Measurements</h2>
+        <div>
+            <h2 className="text-xl font-bold text-gray-800 leading-none">Measurement</h2>
+            <p className="text-xs text-gray-500 mt-1">Manual Verification</p>
+        </div>
+      </div>
+
+      <div className="bg-blue-600 text-white px-4 py-2 text-xs flex items-center justify-between">
+         <span className="flex items-center gap-2"><Info size={14}/> 1. Drag calipers to measure</span>
+         <span className="flex items-center gap-2"><ArrowDownToLine size={14}/> 2. Tap buttons to save</span>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -136,9 +139,10 @@ const MeasurementScreen = () => {
             {/* Scale Control Toggle */}
             <button 
                 onClick={() => setShowCalibration(!showCalibration)}
-                className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-lg backdrop-blur-md transition-colors z-30"
+                className="absolute bottom-2 right-2 bg-black/60 hover:bg-black/80 text-white p-2 rounded-lg backdrop-blur-md transition-colors z-30 flex items-center gap-1"
             >
-                <Settings2 size={16} />
+                <Settings2 size={14} />
+                <span className="text-xs font-medium">Calibrate</span>
             </button>
         </div>
         
@@ -167,9 +171,9 @@ const MeasurementScreen = () => {
         <div className="p-4 space-y-5">
             
             {/* Quick Apply Buttons */}
-            <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+            <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-sm">
                 <p className="text-xs font-bold text-blue-800 uppercase mb-2 flex items-center gap-1">
-                    <ArrowDownToLine size={12} /> Use Measured Value ({measuredMs} ms) For:
+                    <ArrowDownToLine size={12} /> Apply {measuredMs}ms to:
                 </p>
                 <div className="flex gap-2">
                     {['RR', 'PR', 'QRS', 'QT'].map((type) => (
@@ -191,23 +195,23 @@ const MeasurementScreen = () => {
             {/* Manual Inputs Form */}
             <div className="space-y-4">
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="font-semibold text-gray-800 mb-3 text-sm">Intervals (Manual Entry)</h3>
+                    <h3 className="font-semibold text-gray-800 mb-3 text-sm">Interval Values</h3>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">RR Interval</label>
-                            <input type="number" value={measurements.rrIntervalMs} onChange={e => updateMeasurements({rrIntervalMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm" placeholder="e.g. 800" />
+                            <input type="number" value={measurements.rrIntervalMs} onChange={e => updateMeasurements({rrIntervalMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm transition-colors" placeholder="e.g. 800" />
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">PR Interval</label>
-                            <input type="number" value={measurements.prIntervalMs} onChange={e => updateMeasurements({prIntervalMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm" placeholder="e.g. 160" />
+                            <input type="number" value={measurements.prIntervalMs} onChange={e => updateMeasurements({prIntervalMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm transition-colors" placeholder="e.g. 160" />
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">QRS Width</label>
-                            <input type="number" value={measurements.qrsWidthMs} onChange={e => updateMeasurements({qrsWidthMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm" placeholder="e.g. 90" />
+                            <input type="number" value={measurements.qrsWidthMs} onChange={e => updateMeasurements({qrsWidthMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm transition-colors" placeholder="e.g. 90" />
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">QT Interval</label>
-                            <input type="number" value={measurements.qtIntervalMs} onChange={e => updateMeasurements({qtIntervalMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm" placeholder="e.g. 380" />
+                            <input type="number" value={measurements.qtIntervalMs} onChange={e => updateMeasurements({qtIntervalMs: e.target.value})} className="w-full p-2 border rounded mt-1 outline-none focus:border-blue-500 font-mono text-sm transition-colors" placeholder="e.g. 380" />
                         </div>
                     </div>
                 </div>
