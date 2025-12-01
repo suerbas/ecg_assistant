@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useApp } from '../App';
-import { ArrowLeft, MoveHorizontal, Check, Settings2, ArrowDownToLine } from 'lucide-react';
+import { ArrowLeft, MoveHorizontal, Check, Settings2, ArrowDownToLine, Ruler } from 'lucide-react';
 
 const MeasurementScreen = () => {
   const { navigate, capturedImage, measurements, updateMeasurements } = useApp();
@@ -58,63 +58,78 @@ const MeasurementScreen = () => {
       <div className="flex-1 overflow-y-auto">
         
         {/* --- Image & Caliper Container --- */}
-        <div className="relative bg-gray-900 overflow-hidden select-none h-72 touch-none group border-b border-gray-800" ref={containerRef}>
+        <div className="relative bg-gray-900 overflow-hidden select-none h-80 touch-none group border-b border-gray-800 shadow-inner" ref={containerRef}>
             
-            {/* Grid Overlay (Optional visual aid) */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none" 
+            {/* Grid Overlay (Visual aid) */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none z-0" 
                  style={{ 
-                     backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
-                     backgroundSize: `${(40 / totalViewMs) * 100}% 10px` // Rough approximation of small boxes horizontally
+                     backgroundImage: `linear-gradient(to right, #444 1px, transparent 1px), linear-gradient(to bottom, #444 1px, transparent 1px)`,
+                     backgroundSize: `${(40 / totalViewMs) * 100}% 10px`
                  }} 
             />
 
             {capturedImage ? (
-                <img src={capturedImage} alt="ECG" className="w-full h-full object-contain opacity-80" draggable={false} />
+                <img src={capturedImage} alt="ECG" className="w-full h-full object-contain opacity-70" draggable={false} />
             ) : (
-                <div className="w-full h-full flex items-center justify-center text-white">No Image</div>
+                <div className="w-full h-full flex items-center justify-center text-gray-500 flex-col gap-2">
+                    <Ruler size={32} />
+                    <span>No Image Captured</span>
+                </div>
             )}
             
-            {/* --- Caliper 1 --- */}
+            {/* --- Caliper 1 (Red) --- */}
             <div 
-                className="absolute top-0 bottom-0 w-0.5 bg-red-500 cursor-ew-resize z-20 flex flex-col items-center group-hover:bg-red-400"
+                className="absolute top-0 bottom-0 w-1 bg-rose-500 cursor-ew-resize z-20 flex flex-col items-center hover:bg-rose-400 transition-colors shadow-[0_0_10px_rgba(244,63,94,0.6)]"
                 style={{ left: `${caliper1}%` }}
                 onTouchStart={(e) => e.stopPropagation()}
                 onTouchMove={(e) => handleDrag(e, setCaliper1)}
                 onMouseDown={(e) => e.stopPropagation()}
                 onMouseMove={(e) => e.buttons === 1 && handleDrag(e, setCaliper1)}
             >
-                 <div className="absolute top-0 p-2 -ml-2 w-5 h-full touch-action-none" /> {/* Hit area */}
-                 <div className="w-8 h-8 bg-red-500/90 rounded-full shadow-lg flex items-center justify-center mt-2 backdrop-blur-sm border border-white/20">
-                    <MoveHorizontal size={14} className="text-white"/>
+                 <div className="absolute top-0 p-4 -ml-4 w-10 h-full touch-action-none" /> {/* Expanded Hit area */}
+                 <div className="w-9 h-9 bg-rose-500 rounded-full shadow-lg flex items-center justify-center mt-2 ring-2 ring-white/50 backdrop-blur-sm">
+                    <MoveHorizontal size={16} className="text-white"/>
                  </div>
+                 {/* Decorative dots on line */}
+                 <div className="flex-1 w-px bg-white/30 my-2"></div>
             </div>
 
-             {/* --- Caliper 2 --- */}
+             {/* --- Caliper 2 (Blue) --- */}
              <div 
-                className="absolute top-0 bottom-0 w-0.5 bg-blue-500 cursor-ew-resize z-20 flex flex-col items-center group-hover:bg-blue-400"
+                className="absolute top-0 bottom-0 w-1 bg-sky-500 cursor-ew-resize z-20 flex flex-col items-center hover:bg-sky-400 transition-colors shadow-[0_0_10px_rgba(14,165,233,0.6)]"
                 style={{ left: `${caliper2}%` }}
                 onTouchStart={(e) => e.stopPropagation()}
                 onTouchMove={(e) => handleDrag(e, setCaliper2)}
                 onMouseDown={(e) => e.stopPropagation()}
                 onMouseMove={(e) => e.buttons === 1 && handleDrag(e, setCaliper2)}
             >
-                <div className="absolute top-0 p-2 -ml-2 w-5 h-full touch-action-none" /> {/* Hit area */}
-                <div className="w-8 h-8 bg-blue-500/90 rounded-full shadow-lg flex items-center justify-center mt-2 backdrop-blur-sm border border-white/20">
-                    <MoveHorizontal size={14} className="text-white"/>
+                <div className="absolute top-0 p-4 -ml-4 w-10 h-full touch-action-none" /> {/* Expanded Hit area */}
+                <div className="w-9 h-9 bg-sky-500 rounded-full shadow-lg flex items-center justify-center mt-2 ring-2 ring-white/50 backdrop-blur-sm">
+                    <MoveHorizontal size={16} className="text-white"/>
                 </div>
+                 {/* Decorative dots on line */}
+                 <div className="flex-1 w-px bg-white/30 my-2"></div>
             </div>
 
             {/* --- Measurement Indicator (Connecting Line) --- */}
             <div 
-                className="absolute top-1/2 h-px bg-white/50 flex items-center justify-center pointer-events-none z-10"
-                style={{ left: `${left}%`, width: `${diffPercent}%` }}
+                className="absolute top-1/2 flex items-center justify-center pointer-events-none z-10"
+                style={{ left: `${left}%`, width: `${diffPercent}%`, transform: 'translateY(-50%)' }}
             >
-                <div className="h-4 w-px bg-white/50 absolute left-0 -top-2" />
-                <div className="h-4 w-px bg-white/50 absolute right-0 -top-2" />
+                {/* Dashed Connecting Line */}
+                <div className="absolute w-full border-t-2 border-dashed border-yellow-300 drop-shadow-md"></div>
+
+                {/* Vertical Ticks at ends */}
+                <div className="absolute left-0 h-6 w-0.5 bg-yellow-300 -top-3 shadow-sm rounded-full" />
+                <div className="absolute right-0 h-6 w-0.5 bg-yellow-300 -top-3 shadow-sm rounded-full" />
                 
-                <div className="bg-gray-900/90 text-white px-3 py-1 rounded-full text-xs font-mono shadow-xl border border-white/20 flex flex-col items-center whitespace-nowrap z-30">
-                    <span className="font-bold text-sm text-yellow-400">{measuredMs} ms</span>
-                    <span className="text-[10px] text-gray-300">{smallBoxes} sm. boxes</span>
+                {/* Floating Label */}
+                <div className="bg-gray-900/95 text-white px-3 py-1.5 rounded-lg shadow-xl border border-yellow-500/30 flex flex-col items-center whitespace-nowrap z-30 transform -translate-y-8 backdrop-blur-sm">
+                    <div className="flex items-baseline gap-1">
+                        <span className="font-bold text-lg text-yellow-400 font-mono tracking-tight">{measuredMs}</span>
+                        <span className="text-xs text-yellow-200 font-medium">ms</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 font-medium bg-white/10 px-1.5 rounded mt-0.5">{smallBoxes} boxes</span>
                 </div>
             </div>
 
@@ -129,7 +144,7 @@ const MeasurementScreen = () => {
         
         {/* --- Calibration Slider Panel --- */}
         {showCalibration && (
-            <div className="bg-gray-800 p-3 text-white animate-fade-in-down">
+            <div className="bg-gray-800 p-3 text-white animate-fade-in-down border-b border-gray-700">
                 <div className="flex justify-between text-xs text-gray-400 mb-1">
                     <span>Zoom In (1s)</span>
                     <span className="text-yellow-400 font-bold">Scale: {totalViewMs}ms Width</span>
@@ -142,7 +157,7 @@ const MeasurementScreen = () => {
                     step="100"
                     value={totalViewMs}
                     onChange={(e) => setTotalViewMs(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                    className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-sky-500"
                 />
                 <p className="text-[10px] text-gray-500 mt-1 text-center">Adjust until the small boxes in image match ~40ms logic.</p>
             </div>
